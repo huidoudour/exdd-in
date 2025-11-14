@@ -8,7 +8,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Contoso Task Pane Add-in</title>
+    <title>IP对应表模板生成器</title>
 
     <!-- Office JavaScript API -->
     <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
@@ -22,31 +22,47 @@
 
 <body class="ms-font-m ms-welcome ms-Fabric">
     <header class="ms-welcome__header ms-bgColor-neutralLighter">
-        <img width="90" height="90" src="../../assets/logo-filled.png" alt="Contoso" title="Contoso" />
-        <h1 class="ms-font-su">Welcome</h1>
+        <img width="90" height="90" src="../../assets/logo-filled.png" alt="IP模板生成器" title="IP模板生成器" />
+        <h1 class="ms-font-su">IP对应表模板生成器</h1>
     </header>
     <section id="sideload-msg" class="ms-welcome__main">
         <h2 class="ms-font-xl">Please <a target="_blank" href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing">sideload</a> your add-in to see app body.</h2>
     </section>
     <main id="app-body" class="ms-welcome__main" style="display: none;">
-        <h2 class="ms-font-xl"> Discover what Office Add-ins can do for you today! </h2>
-        <ul class="ms-List ms-welcome__features">
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Ribbon ms-font-xl"></i>
-                <span class="ms-font-m">Achieve more with Office integration</span>
-            </li>
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Unlock ms-font-xl"></i>
-                <span class="ms-font-m">Unlock features and functionality</span>
-            </li>
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Design ms-font-xl"></i>
-                <span class="ms-font-m">Create and visualize like a pro</span>
-            </li>
-        </ul>
-        <p class="ms-font-l">Modify the source files, then click <b>Run</b>.</p>
-        <div role="button" id="run" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
-            <span class="ms-Button-label">Run</span>
+        <h2 class="ms-font-xl">IP对应表模板生成器</h2>
+        <div class="ip-template-container">
+            <div class="form-group">
+                <label for="rows-count" class="ms-font-m">表格行数:</label>
+                <input type="number" id="rows-count" min="1" max="1000" value="10" class="ms-TextField">
+            </div>
+            <div class="form-group">
+                <label for="start-ip" class="ms-font-m">起始IP地址:</label>
+                <input type="text" id="start-ip" placeholder="192.168.1.1" class="ms-TextField">
+            </div>
+            <div class="form-group">
+                <label for="column-style" class="ms-font-m">表格样式:</label>
+                <select id="column-style" class="ms-Dropdown">
+                    <option value="default">默认样式</option>
+                    <option value="blue">蓝色主题</option>
+                    <option value="green">绿色主题</option>
+                    <option value="purple">紫色主题</option>
+                </select>
+            </div>
+            <div class="checkbox-group">
+                <label class="ms-CheckBox">
+                    <input type="checkbox" id="include-mac" checked>
+                    <span class="ms-CheckBox-label">包含MAC地址列</span>
+                </label>
+            </div>
+            <div class="checkbox-group">
+                <label class="ms-CheckBox">
+                    <input type="checkbox" id="include-desc" checked>
+                    <span class="ms-CheckBox-label">包含描述列</span>
+                </label>
+            </div>
+        </div>
+        <div role="button" id="create-template" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
+            <span class="ms-Button-label">创建IP对应表模板</span>
         </div>
         <p><label id="item-subject"></label></p>
     </main>
