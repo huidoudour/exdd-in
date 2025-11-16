@@ -86,7 +86,7 @@ export async function createIPTemplate() {
         applyDataStyle(dataRange, style);
         
         // 自动调整列宽
-        sheet.getUsedRange().columns.autoFit();
+        sheet.getUsedRange().format.autofitColumns();
         
         // 设置边框
         const tableRange = sheet.getRangeByIndexes(0, 0, data.length + 1, headers.length);
