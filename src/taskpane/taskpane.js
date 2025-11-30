@@ -75,43 +75,41 @@ export async function createIPTemplate() {
       }
 
       // 写入数据
-      if (data.length > 0) {
-        const dataRange = sheet.getRangeByIndexes(1, 0, data.length, headers.length);
-        dataRange.values = data;
-        
-        // 设置数据样式
-        applyDataStyle(dataRange, style, includeStripe);
-        
-        // 设置高级表格样式
-        const tableRange = sheet.getRangeByIndexes(0, 0, data.length + 1, headers.length);
-        
-        // 应用高级边框样式（内外边框都需要）
-        applyBorderStyle(tableRange, style);
-        
-        // 自动调整列宽
-        sheet.getUsedRange().format.autofitColumns();
-        
-        // 设置列宽
-        sheet.getRange("A:A").format.columnWidth = 8; // 序号列
-        sheet.getRange("B:B").format.columnWidth = 18; // IP地址列
-        if (includeMac) {
-          sheet.getRange("C:C").format.columnWidth = 22; // MAC地址列
+        if (data.length > 0) {
+          const dataRange = sheet.getRangeByIndexes(1, 0, data.length, headers.length);
+          dataRange.values = data;
+          
+          // 设置高级表格样式
+          const tableRange = sheet.getRangeByIndexes(0, 0, data.length + 1, headers.length);
+          
+          // 应用高级边框样式（内外边框都需要）
+          applyBorderStyle(tableRange, style);
+          
+          // 设置列宽（先设置固定宽度，再自动调整）
+          sheet.getRange("A:A").format.columnWidth = 8; // 序号列
+          sheet.getRange("B:B").format.columnWidth = 18; // IP地址列
+          if (includeMac) {
+            sheet.getRange("C:C").format.columnWidth = 22; // MAC地址列
+          }
+          if (includeDesc) {
+            const descColumn = sheet.getRangeByIndexes(0, headers.length - 1, data.length + 1, 1);
+            descColumn.horizontalAlignment = "left";
+            descColumn.format.columnWidth = 30; // 描述列
+          }
+          
+          // 应用我们自定义的边框样式到表格范围
+          applyBorderStyle(tableRange, style);
+          
+          // 设置数据样式（在表格创建前应用，确保行高设置生效）
+          applyDataStyle(dataRange, style, includeStripe);
+          
+          // 创建表格对象来启用筛选功能，但使用无样式表格
+          const table = sheet.tables.add(tableRange, true);
+          table.style = "TableStyleNone"; // 使用无样式表格，避免默认隔行色
+          
+          // 添加条件格式（突出显示特定IP范围）
+          addConditionalFormatting(dataRange, style);
         }
-        if (includeDesc) {
-          const descColumn = sheet.getRangeByIndexes(0, headers.length - 1, data.length + 1, 1);
-          descColumn.horizontalAlignment = "left";
-          descColumn.format.columnWidth = 30; // 描述列
-        }
-        
-        // 应用我们自定义的边框样式到表格范围
-        applyBorderStyle(tableRange, style);
-        
-        // 为范围添加自动筛选功能，避免表格的默认隔行色
-        tableRange.autoFilter = true;
-        
-        // 添加条件格式（突出显示特定IP范围）
-        addConditionalFormatting(dataRange, style);
-      }
 
       await context.sync();
       console.log("IP对应表模板创建成功");
