@@ -26,7 +26,7 @@ export async function createIPTemplate() {
     const style = document.getElementById("column-style").value;
     const includeMac = document.getElementById("include-mac").checked;
     const includeDesc = document.getElementById("include-desc").checked;
-    const includeStripe = document.getElementById("include-stripe")?.checked || true; // 默认启用隔行变色
+    const includeStripe = document.getElementById("include-stripe")?.checked || false; // 默认不启用隔行变色
 
     // 验证输入
     if (!startIP) {
@@ -85,7 +85,7 @@ export async function createIPTemplate() {
         // 设置高级表格样式
         const tableRange = sheet.getRangeByIndexes(0, 0, data.length + 1, headers.length);
         
-        // 应用高级边框样式
+        // 应用高级边框样式（内外边框都需要）
         applyBorderStyle(tableRange, style);
         
         // 自动调整列宽
@@ -103,10 +103,11 @@ export async function createIPTemplate() {
           descColumn.format.columnWidth = 30; // 描述列
         }
         
-        // 添加表格筛选功能
-        // 创建表格对象，Excel会自动为表格添加筛选功能
-        const table = sheet.tables.add(tableRange, true);
-        // 表格创建后会自动启用筛选，无需额外调用方法
+        // 应用我们自定义的边框样式到表格范围
+        applyBorderStyle(tableRange, style);
+        
+        // 为范围添加自动筛选功能，避免表格的默认隔行色
+        tableRange.autoFilter = true;
         
         // 添加条件格式（突出显示特定IP范围）
         addConditionalFormatting(dataRange, style);
@@ -324,7 +325,7 @@ function applyHeaderStyle(range, style) {
 }
 
 // 应用数据样式
-function applyDataStyle(range, style, includeStripe = true) {
+function applyDataStyle(range, style, includeStripe) {
   // 基础数据样式
   range.format.font.name = "微软雅黑";
   range.format.font.size = 11;
