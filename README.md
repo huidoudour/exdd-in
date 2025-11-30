@@ -1,6 +1,6 @@
 # Build Excel add-ins using Office Add-ins Development Kit
 
-Excel add-ins are integrations built by third parties into Excel by using [Excel JavaScript API](https://learn.microsoft.com/en-us/office/dev/add-ins/reference/overview/excel-add-ins-reference-overview) and [Office Platform capabilities](https://learn.microsoft.com/en-us/office/dev/add-ins/overview/office-add-ins).[![AI Assisted](https://img.shields.io/badge/AI-Assisted-blue.svg)](https://github.com/huidoudour/Installer)
+Excel add-ins are integrations built by third parties into Excel by using [Excel JavaScript API](https://learn.microsoft.com/en-us/office/dev/add-ins/reference/overview/excel-add-ins-reference-overview) and [Office Platform capabilities](https://learn.microsoft.com/en-us/office/dev/add-ins/overview/office-add-ins).[![AI Assisted](https://img.shields.io/badge/AI-Assisted-blue.svg)](https://github.com/huidoudour/exdd-in)
 
 ## How to run this project
 
