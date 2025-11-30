@@ -80,7 +80,7 @@ export async function createIPTemplate() {
         dataRange.values = data;
         
         // 设置数据样式
-        applyDataStyle(dataRange, style);
+        applyDataStyle(dataRange, style, includeStripe);
         
         // 设置高级表格样式
         const tableRange = sheet.getRangeByIndexes(0, 0, data.length + 1, headers.length);
@@ -104,7 +104,9 @@ export async function createIPTemplate() {
         }
         
         // 添加表格筛选功能
-        tableRange.applyFilters();
+        // 创建表格对象，Excel会自动为表格添加筛选功能
+        const table = sheet.tables.add(tableRange, true);
+        // 表格创建后会自动启用筛选，无需额外调用方法
         
         // 添加条件格式（突出显示特定IP范围）
         addConditionalFormatting(dataRange, style);
@@ -240,147 +242,155 @@ function isValidIP(ip) {
 // 生成IP地址列表
 function generateIPData(startIP, count) {
   const parts = startIP.split('.');
-  const baseIP = parts.slice(0, 3).join('.');
-  const lastOctet = parseInt(parts[3]);
+  const first = parseInt(parts[0]);
+  const second = parseInt(parts[1]);
+  const third = parseInt(parts[2]);
+  const fourth = parseInt(parts[3]);
   
   const ips = [];
+  let a = first;
+  let b = second;
+  let c = third;
+  let d = fourth;
+  
   for (let i = 0; i < count; i++) {
-    const currentOctet = lastOctet + i;
-    if (currentOctet > 255) {
-      // 如果超过255，重置为1并增加第三个八位组
-      const thirdOctet = parseInt(parts[2]) + Math.floor(currentOctet / 256);
-      const finalOctet = currentOctet % 256;
-      if (thirdOctet > 255) {
-        // 超出范围，停止生成
-        break;
+    ips.push(`${a}.${b}.${c}.${d}`);
+    
+    // 递增IP地址
+    d++;
+    if (d > 255) {
+      d = 0;
+      c++;
+      if (c > 255) {
+        c = 0;
+        b++;
+        if (b > 255) {
+          b = 0;
+          a++;
+          if (a > 255) {
+            break; // IP地址耗尽
+          }
+        }
       }
-      ips.push(`${parts[0]}.${parts[1]}.${thirdOctet}.${finalOctet}`);
-    } else {
-      ips.push(`${baseIP}.${currentOctet}`);
     }
   }
+  
   return ips;
 }
 
 // 应用标题样式
 function applyHeaderStyle(range, style) {
-  // 基础样式设置
+  // 基础样式
   range.format.font.bold = true;
   range.format.font.size = 12;
   range.format.font.name = "微软雅黑";
-  range.format.horizontalAlignment = "center";
-  range.format.verticalAlignment = "center";
+  range.horizontalAlignment = "center";
+  range.verticalAlignment = "center";
+  range.format.rowHeight = 25;
   
-  // 设置标题行高度
-  range.format.rowHeight = 24;
+  // 设置标题背景和字体颜色
+  let backgroundColor = "EEEEEE";
+  let fontColor = "000000";
   
-  // 根据主题设置颜色和高级样式
   switch (style) {
     case 'blue':
-      range.format.fill.color = "4472C4";
-      range.format.font.color = "FFFFFF";
-      // 添加蓝色主题特有的边框效果
-      range.format.borders.getItem("EdgeBottom").lineStyle = "medium";
-      range.format.borders.getItem("EdgeBottom").color = "2E5984";
+      backgroundColor = "4472C4";
+      fontColor = "FFFFFF";
       break;
     case 'green':
-      range.format.fill.color = "70AD47";
-      range.format.font.color = "FFFFFF";
-      // 添加绿色主题特有的边框效果
-      range.format.borders.getItem("EdgeBottom").lineStyle = "medium";
-      range.format.borders.getItem("EdgeBottom").color = "4B7F2E";
+      backgroundColor = "70AD47";
+      fontColor = "FFFFFF";
       break;
     case 'purple':
-      range.format.fill.color = "7030A0";
-      range.format.font.color = "FFFFFF";
-      // 添加紫色主题特有的边框效果
-      range.format.borders.getItem("EdgeBottom").lineStyle = "medium";
-      range.format.borders.getItem("EdgeBottom").color = "4A206F";
+      backgroundColor = "7030A0";
+      fontColor = "FFFFFF";
       break;
     case 'modern':
-      // 现代简约风格
-      range.format.fill.color = "0078D4";
-      range.format.font.color = "FFFFFF";
-      range.format.font.size = 13;
-      range.format.borders.getItem("EdgeBottom").lineStyle = "medium";
-      range.format.borders.getItem("EdgeBottom").color = "005A9E";
+      backgroundColor = "0078D4";
+      fontColor = "FFFFFF";
+      // 现代风格使用较大字号
+      range.format.font.size = 14;
       break;
     case 'classic':
-      // 经典商务风格
-      range.format.fill.color = "201F1E";
-      range.format.font.color = "FFFFFF";
-      range.format.font.name = "Arial";
-      range.format.borders.getItem("EdgeBottom").lineStyle = "thick";
-      range.format.borders.getItem("EdgeBottom").color = "FFFFFF";
+      backgroundColor = "201F1E";
+      fontColor = "FFFFFF";
+      // 经典风格使用粗体和下划线
+      range.format.font.underline = Excel.RangeUnderlineStyle.single;
       break;
-    default:
-      range.format.fill.color = "D9D9D9";
-      range.format.font.color = "000000";
-      range.format.borders.getItem("EdgeBottom").lineStyle = "medium";
-      range.format.borders.getItem("EdgeBottom").color = "A6A6A6";
   }
+  
+  range.format.fill.color = backgroundColor;
+  range.format.font.color = fontColor;
 }
 
 // 应用数据样式
-function applyDataStyle(range, style) {
-  // 基础数据样式设置
+function applyDataStyle(range, style, includeStripe = true) {
+  // 基础数据样式
   range.format.font.name = "微软雅黑";
   range.format.font.size = 11;
-  range.format.horizontalAlignment = "center";
-  range.format.verticalAlignment = "center";
-  
-  // 设置数据行高度
+  range.horizontalAlignment = "center";
+  range.verticalAlignment = "center";
   range.format.rowHeight = 22;
   
-  // 添加隔行变色效果
-  const rowCount = range.rowCount;
-  for (let i = 0; i < rowCount; i++) {
-    const rowRange = range.getRow(i);
-    
-    // 偶数行使用不同的背景色
-    if (i % 2 === 1) {
-      switch (style) {
-        case 'blue':
-          rowRange.format.fill.color = "F0F7FF";
-          break;
-        case 'green':
-          rowRange.format.fill.color = "F4F9F4";
-          break;
-        case 'purple':
-          rowRange.format.fill.color = "FDF5FF";
-          break;
-        case 'modern':
-          rowRange.format.fill.color = "F5F9FF";
-          break;
-        case 'classic':
-          rowRange.format.fill.color = "F8F8F8";
-          break;
-        default:
-          rowRange.format.fill.color = "F5F5F5";
-      }
-    } else {
-      // 奇数行背景色
-      switch (style) {
-        case 'blue':
-          rowRange.format.fill.color = "FFFFFF";
-          break;
-        case 'green':
-          rowRange.format.fill.color = "FFFFFF";
-          break;
-        case 'purple':
-          rowRange.format.fill.color = "FFFFFF";
-          break;
-        case 'modern':
-          rowRange.format.fill.color = "FFFFFF";
-          break;
-        case 'classic':
-          rowRange.format.fill.color = "FFFFFF";
-          break;
-        default:
-          rowRange.format.fill.color = "FFFFFF";
-      }
-    }
+  // 设置数据字体颜色
+  let fontColor = "000000";
+  
+  switch (style) {
+    case 'blue':
+    case 'modern':
+      fontColor = "1A1A1A";
+      break;
+    case 'green':
+      fontColor = "1A1A1A";
+      break;
+    case 'purple':
+      fontColor = "1A1A1A";
+      break;
+    case 'classic':
+      fontColor = "000000";
+      break;
   }
   
-  // 添加行悬停效果的提示（通过注释说明）
-  // 注意：Excel JavaScript API 目前不支持直接添加行悬停效果
+  range.format.font.color = fontColor;
+  
+  // 应用隔行变色 - 使用条件格式代替循环访问rowCount
+  if (includeStripe) {
+    try {
+      // 使用Excel的条件格式功能来实现隔行变色
+      // 这样避免了需要加载rowCount属性
+      const conditionalFormat = range.conditionalFormats.add(Excel.ConditionalFormatType.custom);
+      
+      // 设置公式：=MOD(ROW(),2)=0 表示偶数行（Excel行号从1开始）
+      conditionalFormat.customRule.formula = "=MOD(ROW(),2)=0";
+      
+      // 根据样式设置填充颜色
+      let fillColor = "F5F5F5";
+      switch (style) {
+        case 'blue':
+          fillColor = "F2F7FB";
+          break;
+        case 'green':
+          fillColor = "F4F9F4";
+          break;
+        case 'purple':
+          fillColor = "FDF5FF";
+          break;
+        case 'modern':
+          fillColor = "F5F9FF";
+          break;
+        case 'classic':
+          fillColor = "F8F8F8";
+          break;
+      }
+      
+      conditionalFormat.format.fill.color = fillColor;
+    } catch (error) {
+      // 如果条件格式设置失败，使用备用方案
+      console.log("条件格式设置失败，使用备用方案：", error);
+      
+      // 备用方案：使用简单的隔行变色，但不依赖rowCount
+      // 这里我们暂时不实现备用方案，避免复杂的异步操作
+      // 条件格式失败时，表格仍然可以正常创建，只是没有隔行变色效果
+    }
+  }
+}
